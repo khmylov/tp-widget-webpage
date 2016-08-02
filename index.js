@@ -1,18 +1,12 @@
 tau.mashups
     .addDependency('jQuery')
     .addDependency('react')
-    .addDependency("tau/configurator")
+    .addDependency('tau/configurator')
     .addMashup(function($, React, configurator) {
-        function makeCb(cb) {
-            return function() {
-                cb.apply(null, _.rest(_.toArray(arguments)));
-            };
-        }
-
         var D = React.DOM;
-        
+
         var WebpageWidget = React.createClass({
-            displayName: 'tp_experimental_webpage_frame',
+            displayName: 'tp_webpage_frame_mashup',
             propTypes: {
                 url: React.PropTypes.string,
                 height: React.PropTypes.string
@@ -20,9 +14,9 @@ tau.mashups
             render: function() {
                 var url = this.props.url;
                 if (!url) {
-                    return D.span(null, "Please specify the URL of the web page in the widget settings");
+                    return D.span(null, 'Please specify the URL of the web page in the widget settings');
                 }
-                
+
                 return D.iframe({
                     src: url,
                     frameBorder: 0,
@@ -34,9 +28,9 @@ tau.mashups
                 });
             }
         });
-        
+
         var WidgetSettings = React.createClass({
-            displayName: 'tp_experimental_webpage_frame.settings',
+            displayName: 'tp_webpage_frame_mashup.settings',
             propTypes: {
                 initialUrl: React.PropTypes.string,
                 initialHeight: React.PropTypes.number
@@ -51,11 +45,11 @@ tau.mashups
             _onUrlInputChange: function(e) {
                 this.setState({ url: e.target.value });
             },
-            
+
             _onHeightInputChange: function(e) {
                 this.setState({ height: e.target.value });
             },
-            
+
             render: function() {
                 return D.ul(
                     { className: 'tau-widget-settings-list tau-widget-settings-list--col' },
@@ -67,11 +61,11 @@ tau.mashups
                                 { className: 'tau-widget-settings-list__title' },
                                 'Link to the webpage'
                             ),
-                            D.input({ 
-                                className: 'tau-in-text tau-x-large', 
-                                type: 'url', 
-                                placeholder: 'e.g. http://example.com', 
-                                value: this.state.url, 
+                            D.input({
+                                className: 'tau-in-text tau-x-large',
+                                type: 'url',
+                                placeholder: 'e.g. http://example.com',
+                                value: this.state.url,
                                 onChange: this._onUrlInputChange
                             })
                         )
@@ -84,11 +78,11 @@ tau.mashups
                                 { className: 'tau-widget-settings-list__title' },
                                 'Widget height in pixels'
                             ),
-                            D.input({ 
-                                className: 'tau-in-text tau-x-large', 
-                                type: 'number', 
-                                placeholder: 'e.g. 600', 
-                                value: this.state.height, 
+                            D.input({
+                                className: 'tau-in-text tau-x-large',
+                                type: 'number',
+                                placeholder: 'e.g. 600',
+                                value: this.state.height,
                                 onChange: this._onHeightInputChange
                             })
                         )
@@ -96,16 +90,16 @@ tau.mashups
                 );
             }
         });
-        
+
         var appConfigurator;
-        configurator.getGlobalBus().on('configurator.ready', makeCb(function(configurator) {
+        configurator.getGlobalBus().on('configurator.ready', function(evt, configurator) {
             if (!appConfigurator && configurator._id && configurator._id.match(/board/)) {
                 appConfigurator = configurator;
                 configurator.getDashboardWidgetTemplateRegistry().addWidgetTemplate({
-                    id: 'tp_experimental_webpage_frame',
+                    id: 'tp_webpage_frame_mashup',
                     name: 'Web page',
                     description: 'Displays any web page',
-                    tags: ['Experimental'],
+                    tags: ['Mashups'],
                     defaultSettings: {
                         height: 400
                     },
@@ -114,7 +108,7 @@ tau.mashups
                             url: settings.url,
                             height: settings.height
                         };
-                        
+
                         React.render(React.createElement(WebpageWidget, props), placeholder);
                     },
                     insertSettings: function(placeholder, settings) {
@@ -122,16 +116,17 @@ tau.mashups
                             initialUrl: settings.url,
                             initialHeight: settings.height
                         };
-                        
+
                         var renderedView = React.render(React.createElement(WidgetSettings, props), placeholder);
                         return function getCurrentWidgetSettings() {
+                            var state = renderedView.state;
                             return {
-                                url: renderedView.state.url,
-                                height: renderedView.state.height
+                                url: state.url,
+                                height: state.height
                             };
                         };
                     }
                 });
             }
-        }));
+        });
     });
